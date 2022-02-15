@@ -11,5 +11,9 @@ class UnrecognizedLogEvent(LogEvent):
     message: str = None
 
     def __init__(self, log_message: str):
-        super().__init__(log_message)
+        try:
+            super().__init__(log_message)
+        except AttributeError:
+            # Parsing failed, put everything in message
+            self._start_index = 0
         self.message = log_message[self._start_index:].strip()
