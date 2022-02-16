@@ -21,7 +21,7 @@ class SpaceTabEventConsumer(SinkConsumer):
     def __init__(self, events_to_respond: List[Type[BaseEvent]]):
         super().__init__(events_to_respond)
 
-    async def process_event(self, item: SpaceTabLogEvent) -> None:
+    async def process(self, item: SpaceTabLogEvent) -> None:
 
         logger.info(f"Tab event {item.nicknames_list}")
 

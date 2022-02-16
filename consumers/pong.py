@@ -14,7 +14,7 @@ class PongEventConsumer(SinkConsumer):
     def __init__(self, events_to_respond: List[Type[BaseEvent]]):
         super().__init__(events_to_respond)
 
-    async def process_event(self, item: PongEvent) -> Union[None, BaseEvent]:
+    async def process(self, item: PongEvent) -> Union[None, BaseEvent]:
         print(f"got ponged, {item}")
         await asyncio.sleep(2)
         return PingEvent(datetime.now().time(), "ping")

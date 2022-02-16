@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 
 from events.base_event import BaseEvent
 from events.event_factory import LogEventFactory
-from producers.base_producer import BaseProducer
+from consumers.base_producer import BaseProducer
 from router.router import EventRouter
 
 DIRECTORY = r"~\AppData\Roaming\.vimeworld\minigames\logs"

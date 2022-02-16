@@ -13,5 +13,5 @@ class UserJoinedEventConsumer(SinkConsumer):
     def __init__(self, events_to_respond: List[Type[BaseEvent]]):
         super().__init__(events_to_respond)
 
-    async def process_event(self, item: UserJoinedLogEvent) -> None:
+    async def process(self, item: UserJoinedLogEvent) -> None:
         logger.debug(f"User {item.nick} joined")

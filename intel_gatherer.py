@@ -1,10 +1,9 @@
 from __future__ import annotations
 import asyncio
-import subprocess
 from datetime import datetime
 
 from consumers.basic_consumer import SinkConsumer
-from producers.GetContent_producer import GetContentProducer
+from consumers.GetContent_producer import GetContentProducer
 from router.router import EventRouter
 from consumers.ping import PingEventConsumer
 from consumers.pong import PongEventConsumer
@@ -33,15 +32,15 @@ async def main():
     producer = GetContentProducer(factory)
     router = EventRouter()
 
-    await router.register_consumer(space_tab_consumer)
-    await router.register_consumer(sink_consumer)
-    await router.register_consumer(user_joined_consumer)
-    await router.register_consumer(ping)
-    await router.register_consumer(pong)
+    await router.register_node(space_tab_consumer)
+    await router.register_node(sink_consumer)
+    await router.register_node(user_joined_consumer)
+    await router.register_node(ping)
+    await router.register_node(pong)
 
-    await router.register_producer(producer)
+    await router.register_node(producer)
 
-    #await router.route_event(PingEvent(datetime.now().time(), "ping"))
+    await router.route_event(PingEvent(datetime.now().time(), "ping"))
     await router.run()
 
 

@@ -1,20 +1,20 @@
 from __future__ import annotations
 import asyncio
-from typing import List, Awaitable, Dict, Type
+from typing import List, Awaitable, Dict, Type, Union, TYPE_CHECKING
 from consumers.basic_consumer import SinkConsumer
-from events.base_event import BaseEvent
-from producers.base_producer import BaseProducer
+if TYPE_CHECKING:
+    from consumers.basic_node import BasicNode
+    from events.base_event import BaseEvent
+    from consumers.base_producer import BaseProducer
 
 
 class EventRouter:
-    consumer_list: List[SinkConsumer] = None
-    producer_list: List[BaseProducer]
+    node_list: List[BasicNode] = None
     _event_routing: Dict[Type[BaseEvent], List[SinkConsumer]] = None
     _sink: SinkConsumer = None
 
     def __init__(self, default: Type[SinkConsumer] = SinkConsumer):
-        self.consumer_list = []
-        self.producer_list = []
+        self.node_list = []
 
         self._event_routing = {}
         self._sink = default([])
@@ -25,20 +25,21 @@ class EventRouter:
         :return:
         """
         return asyncio.gather(
-            *[consumer._process_events() for consumer in self.consumer_list],
-            *[producer._produce_events() for producer in self.producer_list])
+            *[consumer._running_loop() for consumer in self.node_list])
 
-    async def register_consumer(self, consumer: SinkConsumer):
-        await consumer._create_queue()
-        self.consumer_list.append(consumer)
-        for event in consumer.events_to_respond:
-            self._event_routing[event] = self._event_routing.get(event, []) + [consumer]
-        consumer._router = self
-
-    async def register_producer(self, producer: BaseProducer):
-        self.producer_list.append(producer)
-        producer._router = self
-        await producer.setup()
+    async def register_node(self, node: Union[BaseProducer, SinkConsumer]):
+        try:
+            # Try if this is a consumer
+            await node._create_queue()
+            for event in node.events_to_respond:
+                self._event_routing[event] = self._event_routing.get(event, []) + [node]
+        except AttributeError:
+            # This was a producer
+            pass
+        finally:
+            self.node_list.append(node)
+            node._set_router(self)
+            await node.setup()
 
     async def route_event(self, event: BaseEvent) -> None:
         """

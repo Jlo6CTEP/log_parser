@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from consumers.basic_node import BasicNode
 from events.base_event import BaseEvent
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -9,18 +10,13 @@ if TYPE_CHECKING:
 
 
 @dataclass
-class BaseProducer:
-    _router: EventRouter = None
-
+class BaseProducer(BasicNode):
     def __init__(self):
-        pass
-
-    async def setup(self):
-        pass
+        super().__init__()
 
     async def produce(self) -> BaseEvent:
         pass
 
-    async def _produce_events(self) -> None:
+    async def _running_loop(self) -> None:
         while True:
             await self._router.route_event(await self.produce())
