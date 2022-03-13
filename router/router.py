@@ -1,54 +1,58 @@
 from __future__ import annotations
+
 import asyncio
-from typing import List, Awaitable, Dict, Type, Union, TYPE_CHECKING
-from consumers.basic_consumer import SinkConsumer
-if TYPE_CHECKING:
-    from consumers.basic_node import BasicNode
-    from events.base_event import BaseEvent
-    from consumers.base_producer import BaseProducer
+from typing import List, Dict, Type
+
+from events.base_event import BaseEvent
+from nodes.basic_nodes import BaseConsumer
+from nodes.basic_nodes import BaseNode
 
 
 class EventRouter:
-    node_list: List[BasicNode] = None
-    _event_routing: Dict[Type[BaseEvent], List[SinkConsumer]] = None
-    _sink: SinkConsumer = None
+    node_list: List[BaseNode] = None
+    _local_event_routing: Dict[Type[BaseEvent], List[BaseNode]] = None
+    _sink: BaseConsumer = None
 
-    def __init__(self, default: Type[SinkConsumer] = SinkConsumer):
+    def __init__(self, default: Type[BaseConsumer] = BaseConsumer):
         self.node_list = []
 
-        self._event_routing = {}
+        self._local_event_routing = {}
         self._sink = default([])
+        self._sink._set_router(self)
 
-    def run(self) -> Awaitable:
+    async def run(self) -> None:
         """
-        Use this to start all consumers and producers simultaneously
+        Use this to start all nodes simultaneously.
+        Blocking
         :return:
         """
-        return asyncio.gather(
-            *[consumer._running_loop() for consumer in self.node_list])
+        await self._sink.setup()
+        await asyncio.gather(
+            *[node._running_loop() for node in self.node_list],
+            self._sink._running_loop()
+        )
 
-    async def register_node(self, node: Union[BaseProducer, SinkConsumer]):
-        try:
-            # Try if this is a consumer
-            await node._create_queue()
-            for event in node.events_to_respond:
-                self._event_routing[event] = self._event_routing.get(event, []) + [node]
-        except AttributeError:
-            # This was a producer
-            pass
-        finally:
-            self.node_list.append(node)
-            node._set_router(self)
-            await node.setup()
+    async def register_node(self, node: BaseNode) -> None:
+        for event in node.events_to_respond:
+            self._local_event_routing[event] = \
+                self._local_event_routing.get(event, []) + [node]
+        self.node_list.append(node)
+        node._set_router(self)
+        await node.setup()
 
-    async def route_event(self, event: BaseEvent) -> None:
+    async def unregister_node(self, node: BaseNode) -> None:
+        for event in node.events_to_respond:
+            self._local_event_routing[event].remove(node)
+        self.node_list.remove(node)
+
+    def route_event(self, event: BaseEvent) -> None:
         """
-        Find right consumer for an event `event` and add it to it's queue
+        Find right node for an event `event` and add it to it's queue
         :param event:
         :return:
         """
-        for consumer in self._event_routing.get(type(event), [self._sink]):
-            await consumer.queue.put(event)
+        for node in self._local_event_routing.get(type(event), [self._sink]):
+            asyncio.create_task(node.enqueue_event(event))
 
 
 
