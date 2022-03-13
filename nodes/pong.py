@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import List, Type, Union
 
-from consumers.basic_consumer import BaseConsumer
+from nodes.basic_nodes import BaseConsumer
 from events.base_event import BaseEvent
 from events.ping import PingEvent, PongEvent
 

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import List, Type
 
-from consumers.basic_consumer import BaseConsumer
+from nodes.basic_nodes import BaseConsumer
 from events.base_event import BaseEvent
 from events.user_joined_event import UserJoinedLogEvent
 from logging_facility import logger
