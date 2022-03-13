@@ -1,5 +1,5 @@
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, asdict
 from datetime import datetime
 
 from events.base_event import BaseEvent
@@ -7,12 +7,12 @@ from events.base_event import BaseEvent
 
 @dataclass
 class LogEvent(BaseEvent):
-    source : str = None
-    target: str = None
+    source : str = field(default="")
+    target: str = field(default="")
     _pattern_matcher: re.Pattern = field(default=re.compile(
         ".*(?P<tstamp>\\[\d\d:\d\d:\d\d]) (?P<src>\\[[^]]*]): (?P<tgt>\\[[^]]*])?"),
-    repr=False)
-    _start_index: int = field(default=0, repr=False)
+    repr=False, metadata={'dict': False})
+    _start_index: int = field(default=0, repr=False, metadata={'dict': False})
 
     def __init__(self, log_message: str):
         """

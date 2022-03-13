@@ -1,7 +1,7 @@
 from __future__ import annotations
 from asyncio import Queue
 from dataclasses import dataclass
-from typing import Union, TYPE_CHECKING
+from typing import Union, TYPE_CHECKING, List, Type
 
 from events.base_event import BaseEvent
 
@@ -10,8 +10,9 @@ if TYPE_CHECKING:
 
 
 @dataclass
-class BasicNode:
+class BaseNode:
     _router: EventRouter = None
+    events_to_respond: List[Type[BaseEvent]] = None
 
     def __init__(self):
         pass

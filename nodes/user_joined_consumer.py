@@ -1,14 +1,14 @@
 from dataclasses import dataclass
 from typing import List, Type
 
-from consumers.basic_consumer import SinkConsumer
+from consumers.basic_consumer import BaseConsumer
 from events.base_event import BaseEvent
 from events.user_joined_event import UserJoinedLogEvent
 from logging_facility import logger
 
 
 @dataclass
-class UserJoinedEventConsumer(SinkConsumer):
+class UserJoinedEventConsumer(BaseConsumer):
 
     def __init__(self, events_to_respond: List[Type[BaseEvent]]):
         super().__init__(events_to_respond)

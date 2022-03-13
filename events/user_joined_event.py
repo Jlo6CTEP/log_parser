@@ -1,15 +1,16 @@
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from events.log_event import LogEvent
+
 
 @dataclass
 class UserJoinedLogEvent(LogEvent):
     """
     This one will accept ANY log_message
     """
-    tag: str = None
-    nick: str = None
+    tag: str = field(default="")
+    nick: str = field(default="")
 
     _pattern_matcher = re.compile("\\+ (?P<tag>\\[[^]]{1,4}]) (?P<nick>\w+)")
 

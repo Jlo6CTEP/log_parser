@@ -7,10 +7,10 @@ from events.log_event import LogEvent
 
 @dataclass
 class SpaceTabLogEvent(LogEvent):
-    nicknames_list: List[str] = None
+    nicknames_list: List[str] = field(default_factory=list)
 
     _pattern_matcher: re.Pattern = field(
-        default=re.compile("(\w+, )+(\w+)$"), repr=False
+        default=re.compile("(\w+, )+(\w+)$"), repr=False,
     )
 
     def __init__(self, log_message: str):
